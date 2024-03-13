@@ -1,0 +1,75 @@
+#include <stdio.h>
+
+// Process structure
+struct Process {
+    int process_id;
+    int arrival_time;
+    int burst_time;
+};
+
+// Function to swap two processes
+void swap(struct Process *xp, struct Process *yp) {
+    struct Process temp = *xp;
+    *xp = *yp;
+    *yp = temp;
+}
+
+// Function to perform selection sort based on burst time
+void selectionSort(struct Process processes[], int n) {
+    int i, j, min_index;
+    for (i = 0; i < n - 1; i++) {
+        min_index = i;
+        for (j = i + 1; j < n; j++) {
+            if (processes[j].burst_time < processes[min_index].burst_time)
+                min_index = j;
+        }
+        swap(&processes[min_index], &processes[i]);
+    }
+}
+
+// Function to calculate waiting time and turnaround time
+void calculateTimes(struct Process processes[], int n, int waiting_time[], int turnaround_time[]) {
+    int total_waiting_time = 0, total_turnaround_time = 0;
+    waiting_time[0] = 0; // First process doesn't need to wait
+
+    // Calculate waiting time for each process
+    for (int i = 1; i < n; i++) {
+        waiting_time[i] = waiting_time[i - 1] + processes[i - 1].burst_time;
+        total_waiting_time += waiting_time[i];
+    }
+
+    // Calculate turnaround time for each process
+    for (int i = 0; i < n; i++) {
+        turnaround_time[i] = waiting_time[i] + processes[i].burst_time;
+        total_turnaround_time += turnaround_time[i];
+    }
+
+    // Print average waiting time and turnaround time
+    printf("Average Waiting Time: %.2f\n", (float)total_waiting_time / n);
+    printf("Average Turnaround Time: %.2f\n", (float)total_turnaround_time / n);
+}
+
+int main() {
+    int n;
+
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+
+    struct Process processes[n];
+    int waiting_time[n], turnaround_time[n];
+
+    // Input process details
+    for (int i = 0; i < n; i++) {
+        printf("Enter arrival time and burst time for process %d: ", i + 1);
+        scanf("%d %d", &processes[i].arrival_time, &processes[i].burst_time);
+        processes[i].process_id = i + 1;
+    }
+
+    // Sort processes based on burst time (SJF)
+    selectionSort(processes, n);
+
+    // Calculate waiting time and turnaround time
+    calculateTimes(processes, n, waiting_time, turnaround_time);
+
+    return 0;
+}
