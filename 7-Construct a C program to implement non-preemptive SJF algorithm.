@@ -1,20 +1,17 @@
 #include <stdio.h>
-
-// Process structure
 struct Process {
     int process_id;
     int arrival_time;
     int burst_time;
+    int completion_time;
+    int turnaround_time;
+    int waiting_time;
 };
-
-// Function to swap two processes
 void swap(struct Process *xp, struct Process *yp) {
     struct Process temp = *xp;
     *xp = *yp;
     *yp = temp;
 }
-
-// Function to perform selection sort based on burst time
 void selectionSort(struct Process processes[], int n) {
     int i, j, min_index;
     for (i = 0; i < n - 1; i++) {
@@ -27,28 +24,6 @@ void selectionSort(struct Process processes[], int n) {
     }
 }
 
-// Function to calculate waiting time and turnaround time
-void calculateTimes(struct Process processes[], int n, int waiting_time[], int turnaround_time[]) {
-    int total_waiting_time = 0, total_turnaround_time = 0;
-    waiting_time[0] = 0; // First process doesn't need to wait
-
-    // Calculate waiting time for each process
-    for (int i = 1; i < n; i++) {
-        waiting_time[i] = waiting_time[i - 1] + processes[i - 1].burst_time;
-        total_waiting_time += waiting_time[i];
-    }
-
-    // Calculate turnaround time for each process
-    for (int i = 0; i < n; i++) {
-        turnaround_time[i] = waiting_time[i] + processes[i].burst_time;
-        total_turnaround_time += turnaround_time[i];
-    }
-
-    // Print average waiting time and turnaround time
-    printf("Average Waiting Time: %.2f\n", (float)total_waiting_time / n);
-    printf("Average Turnaround Time: %.2f\n", (float)total_turnaround_time / n);
-}
-
 int main() {
     int n;
 
@@ -56,20 +31,35 @@ int main() {
     scanf("%d", &n);
 
     struct Process processes[n];
-    int waiting_time[n], turnaround_time[n];
-
-    // Input process details
     for (int i = 0; i < n; i++) {
         printf("Enter arrival time and burst time for process %d: ", i + 1);
         scanf("%d %d", &processes[i].arrival_time, &processes[i].burst_time);
         processes[i].process_id = i + 1;
     }
-
-    // Sort processes based on burst time (SJF)
     selectionSort(processes, n);
+    int current_time = 0;
+    for (int i = 0; i < n; i++) {
+        processes[i].completion_time = current_time + processes[i].burst_time;
+        processes[i].turnaround_time = processes[i].completion_time - processes[i].arrival_time;
+        processes[i].waiting_time = processes[i].turnaround_time - processes[i].burst_time;
+        current_time = processes[i].completion_time;
+    }
+    printf("\nProcess\tArrival Time\tBurst Time\tCompletion Time\tTurnaround Time\tWaiting Time\n");
+    for (int i = 0; i < n; i++) {
+        printf("%d\t%d\t\t%d\t\t%d\t\t%d\t\t%d\n", processes[i].process_id, processes[i].arrival_time,
+               processes[i].burst_time, processes[i].completion_time, processes[i].turnaround_time,
+               processes[i].waiting_time);
+    }
+    float avg_waiting_time = 0, avg_turnaround_time = 0;
+    for (int i = 0; i < n; i++) {
+        avg_waiting_time += processes[i].waiting_time;
+        avg_turnaround_time += processes[i].turnaround_time;
+    }
+    avg_waiting_time /= n;
+    avg_turnaround_time /= n;
 
-    // Calculate waiting time and turnaround time
-    calculateTimes(processes, n, waiting_time, turnaround_time);
+    printf("\nAverage Waiting Time: %.2f\n", avg_waiting_time);
+    printf("Average Turnaround Time: %.2f\n", avg_turnaround_time);
 
     return 0;
 }
